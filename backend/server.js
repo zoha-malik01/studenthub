@@ -2,6 +2,8 @@ const express = require("express");
 
 const app = express();
 
+const courseRoutes = require("./routes/courseRoutes");
+
 // Home Route
 app.get("/", (req, res) => {
     res.send("Welcome to StudentHub!");
@@ -39,9 +41,7 @@ const about =
   };
 
 
-app.get("/courses", (req, res) => {
-  res.json(courses);
-});
+app.use("/courses", courseRoutes);
 
 
 app.get("/about", (req, res) => {
