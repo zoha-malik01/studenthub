@@ -23,8 +23,24 @@ const courses = [
   },
 ];
 
+// GET all courses
 router.get("/", (req, res) => {
   res.json(courses);
+});
+
+// GET one course by ID
+router.get("/:id", (req, res) => {
+  const id = Number(req.params.id);
+
+  const course = courses.find(c => c.id === id);
+
+  if (!course) {
+    return res.status(404).json({
+      message: "Course not found"
+    });
+  }
+
+  res.json(course);
 });
 
 module.exports = router;
