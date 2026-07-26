@@ -30,6 +30,9 @@ router.get("/", (req, res) => {
 
 // GET one course by ID
 router.get("/:id", (req, res) => {
+  console.log("Route hit!");
+  console.log(req.params);
+
   const id = Number(req.params.id);
 
   const course = courses.find(c => c.id === id);
@@ -41,6 +44,27 @@ router.get("/:id", (req, res) => {
   }
 
   res.json(course);
+});
+
+// POST - Add a new course
+router.post("/", (req, res) => {
+
+  const { name, instructor, duration } = req.body;
+
+  const newCourse = {
+    id: courses.length + 1,
+    name,
+    instructor,
+    duration
+  };
+
+  courses.push(newCourse);
+
+  res.status(201).json({
+    message: "Course added successfully",
+    course: newCourse
+  });
+
 });
 
 module.exports = router;

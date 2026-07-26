@@ -2,6 +2,8 @@ const express = require("express");
 
 const app = express();
 
+app.use(express.json()); // Parses JSON request bodies
+
 const courseRoutes = require("./routes/courseRoutes");
 
 // Home Route
