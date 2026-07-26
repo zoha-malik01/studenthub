@@ -51,6 +51,12 @@ router.post("/", (req, res) => {
 
   const { name, instructor, duration } = req.body;
 
+  if (!name || !instructor || !duration) {
+    return res.status(400).json({
+      message: "All fields are required."
+    });
+  }
+
   const newCourse = {
     id: courses.length + 1,
     name,
