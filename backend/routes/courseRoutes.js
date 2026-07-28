@@ -2,75 +2,101 @@ const express = require("express");
 
 const router = express.Router();
 
-const courses = [
-  {
-    id: 1,
-    name: "Web Development",
-    instructor: "Zoha",
-    duration: "8 Weeks",
-  },
-  {
-    id: 2,
-    name: "Database Systems",
-    instructor: "Ali",
-    duration: "6 Weeks",
-  },
-  {
-    id: 3,
-    name: "Python",
-    instructor: "Sarah",
-    duration: "10 Weeks",
-  },
-];
+const pool = require("../db");
 
-// GET all courses
-router.get("/", (req, res) => {
-  res.json(courses);
+router.get("/:id", async (req, res) => {
+
+    const id = req.params.id;
+    try {
+        const result = await pool.query(
+            "SELECT * FROM courses WHERE id = $1",
+            [id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: "Course not found"
+            });
+        }
+        res.json(result.rows[0]);
+      } 
+    catch (error) {
+        console.log(error);
+          res.status(500).json({
+            message: "Server Error"
+        });
+    }
 });
 
-// GET one course by ID
-router.get("/:id", (req, res) => {
-  console.log("Route hit!");
-  console.log(req.params);
-
-  const id = Number(req.params.id);
-
-  const course = courses.find(c => c.id === id);
-
-  if (!course) {
-    return res.status(404).json({
-      message: "Course not found"
-    });
-  }
-
-  res.json(course);
-});
 
 // POST - Add a new course
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
+   const { name, instructor, duration } = req.body;
+    if (!name || !instructor || !duration) {
+        return res.status(400).json({
+            message: "All fields are required."
+        });
+    }
+    try {
+        const result = await pool.query(
+            `INSERT INTO courses
+            (name, instructor, duration)
+            VALUES ($1, $2, $3)
+            RETURNING *`,
+            [name, instructor, duration]
+        );
 
-  const { name, instructor, duration } = req.body;
-
-  if (!name || !instructor || !duration) {
-    return res.status(400).json({
-      message: "All fields are required."
-    });
-  }
-
-  const newCourse = {
-    id: courses.length + 1,
-    name,
-    instructor,
-    duration
-  };
-
-  courses.push(newCourse);
-
-  res.status(201).json({
-    message: "Course added successfully",
-    course: newCourse
-  });
+        res.status(201).json({
+            message: "Course added successfully",
+            course: result.rows[0]
+        });
+    }
+     catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Server Error"
+        });
+    }
 
 });
+
+// Update course
+router.put("/:id", async (req, res) => {
+
+    const id = req.params.id;
+    const { name, instructor, duration } = req.body;
+
+    if (!name || !instructor || !duration) {
+        return res.status(400).json({
+            message: "All fields are required."
+        });
+    }
+    try {
+        const result = await pool.query(
+          `UPDATE courses
+            SET name = $1,
+                instructor = $2,
+                duration = $3
+            WHERE id = $4
+            RETURNING *`,
+            [name, instructor, duration, id]
+        );
+      if (result.rows.length === 0) {
+            return res.status(404).json({
+                message: "Course not found"
+            });
+        }
+        res.json({
+            message: "Course updated successfully",
+            course: result.rows[0]
+        });
+      } 
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Server Error"
+        });
+    }
+});
+
 
 module.exports = router;
