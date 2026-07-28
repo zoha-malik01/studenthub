@@ -2,7 +2,11 @@ const express = require("express");
 
 const app = express();
 
+const authRoutes = require("./routes/authRoutes");
+
+
 app.use(express.json()); // Parses JSON request bodies
+app.use("/auth", authRoutes);
 
 const courseRoutes = require("./routes/courseRoutes");
 
