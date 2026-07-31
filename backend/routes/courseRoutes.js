@@ -1,11 +1,25 @@
 const express = require("express");
-
 const router = express.Router();
+
+console.log("Course Routes Loaded");
 
 const pool = require("../db");
 
-router.get("/:id", async (req, res) => {
+// GET - Get all courses
+router.get("/", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM courses");
+        res.json(result.rows);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Server Error"
+        });
+    }
+});
 
+// GET - Get a single course by ID
+router.get("/:id", async (req, res) => {
     const id = req.params.id;
     try {
         const result = await pool.query(
@@ -21,17 +35,16 @@ router.get("/:id", async (req, res) => {
       } 
     catch (error) {
         console.log(error);
-          res.status(500).json({
+        res.status(500).json({
             message: "Server Error"
         });
     }
 });
 
-
 // POST - Add a new course
 router.post("/", async (req, res) => {
-   const { name, instructor, duration } = req.body;
-    if (!name || !instructor || !duration) {
+   const { title, instructor, duration } = req.body;
+    if (!title || !instructor || !duration) {
         return res.status(400).json({
             message: "All fields are required."
         });
@@ -39,10 +52,10 @@ router.post("/", async (req, res) => {
     try {
         const result = await pool.query(
             `INSERT INTO courses
-            (name, instructor, duration)
+            (title, instructor, duration)
             VALUES ($1, $2, $3)
             RETURNING *`,
-            [name, instructor, duration]
+            [title, instructor, duration]
         );
 
         res.status(201).json({
@@ -56,16 +69,14 @@ router.post("/", async (req, res) => {
             message: "Server Error"
         });
     }
-
 });
 
 // Update course
 router.put("/:id", async (req, res) => {
-
     const id = req.params.id;
-    const { name, instructor, duration } = req.body;
+    const { title, instructor, duration } = req.body;
 
-    if (!name || !instructor || !duration) {
+    if (!title || !instructor || !duration) {
         return res.status(400).json({
             message: "All fields are required."
         });
@@ -73,12 +84,12 @@ router.put("/:id", async (req, res) => {
     try {
         const result = await pool.query(
           `UPDATE courses
-            SET name = $1,
+            SET title = $1,
                 instructor = $2,
                 duration = $3
             WHERE id = $4
             RETURNING *`,
-            [name, instructor, duration, id]
+            [title, instructor, duration, id]
         );
       if (result.rows.length === 0) {
             return res.status(404).json({
@@ -98,7 +109,7 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-// delete course 
+// Delete course 
 router.delete("/:id", async (req, res) => {
     const id = req.params.id;
 
